@@ -25,6 +25,9 @@ import binaryninja
 from binaryninja.binaryview import BinaryReader, BinaryView
 from binaryninja.architecture import Architecture
 from binaryninja.enums import (SectionSemantics, SegmentFlag, SymbolType)
+from binaryninja.types import Symbol
+
+from .c64.constants import KERNAL
 
 class C64PRG(BinaryView):
     name = "C64 PRG Format"
@@ -36,8 +39,10 @@ class C64PRG(BinaryView):
         self.data :BinaryView = data
         self.br = BinaryReader(self.data)
         self.base_addr :int = self.br.read16le()
-        self.add_auto_segment( self.base_addr, len(self.data), 2, len(self.data), SegmentFlag.SegmentReadable | SegmentFlag.SegmentExecutable)
-
+        self.add_auto_segment( self.base_addr, len(self.data), 2, len(self.data)-2, SegmentFlag.SegmentReadable | SegmentFlag.SegmentExecutable)
+        for addr in KERNAL.keys():
+            #self.define_user_data_var(addr, _type)
+            self.define_auto_symbol(Symbol(SymbolType.DataSymbol, addr, KERNAL[addr]))
     @classmethod
     def is_valid_for_data(self, data):
         print(data.file.original_filename)
