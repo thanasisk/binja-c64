@@ -45,7 +45,10 @@ class C64PRG(BinaryView):
             self.define_auto_symbol(Symbol(SymbolType.DataSymbol, addr, KERNAL[addr]))
     @classmethod
     def is_valid_for_data(self, data):
-        print(data.file.original_filename)
-        return True
+        if data.file.original_filename.lower().endswith(".prg"):
+            return True
+        else:
+            print("Not a .prg file")
+            return False
 
 C64PRG.register()
