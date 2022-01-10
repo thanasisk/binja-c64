@@ -34,15 +34,19 @@ class C64PRG(BinaryView):
     long_name = "C64 PRG Format"
 
     def __init__(self, data):
+        # PRG format is 2bytes for memloc + 15 bytes boilerplate setup code
+        # that was inserted via db thus offset = 0x0F + 0x02 = 0x11
+        offset = 0x11
         BinaryView.__init__(self, parent_view=data, file_metadata=data.file)
         self.platform = Architecture['6502'].standalone_platform
         self.data :BinaryView = data
         self.br = BinaryReader(self.data)
         self.base_addr :int = self.br.read16le()
-        self.add_auto_segment( self.base_addr, len(self.data), 2, len(self.data)-2, SegmentFlag.SegmentReadable | SegmentFlag.SegmentExecutable)
+        self.add_auto_segment(0x00, len(self.data), offset, len(self.data), SegmentFlag.SegmentReadable | SegmentFlag.SegmentExecutable)
         for addr in KERNAL.keys():
-            #self.define_user_data_var(addr, _type)
             self.define_auto_symbol(Symbol(SymbolType.DataSymbol, addr, KERNAL[addr]))
+        self.add_entry_point(0x00)
+
     @classmethod
     def is_valid_for_data(self, data):
         if data.file.original_filename.lower().endswith(".prg"):
